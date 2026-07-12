@@ -1,0 +1,1 @@
+# StadiumOps AI — app package

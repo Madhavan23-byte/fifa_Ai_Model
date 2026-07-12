@@ -1,0 +1,9 @@
+export { CommandCenterDashboard } from './CommandCenterDashboard'
+// Widget exports — available for future standalone use
+export { MatchCard }      from './widgets/MatchCard'
+export { CrowdStatus }    from './widgets/CrowdStatus'
+export { GateStatus }     from './widgets/GateStatus'
+export { ParkingStatus }  from './widgets/ParkingStatus'
+export { WeatherCard }    from './widgets/WeatherCard'
+export { QuickActions }   from './widgets/QuickActions'
+export { AssignedTasks }  from './widgets/AssignedTasks'
