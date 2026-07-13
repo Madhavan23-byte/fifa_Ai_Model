@@ -4,6 +4,8 @@ import RoleSelectionPage     from '@/pages/RoleSelectionPage'
 import DashboardPage         from '@/pages/DashboardPage'
 import AIAssistantPage       from '@/pages/AIAssistantPage'
 import OperationsCopilotPage from '@/pages/OperationsCopilotPage'
+import NavigationPage        from '@/pages/NavigationPage'
+import EmergencyPage         from '@/pages/EmergencyPage'
 import NotFoundPage          from '@/pages/NotFoundPage'
 
 const router = createBrowserRouter([
@@ -26,6 +28,14 @@ const router = createBrowserRouter([
   {
     path: '/copilot',
     element: <OperationsCopilotPage />,
+  },
+  {
+    path: '/navigation',
+    element: <NavigationPage />,
+  },
+  {
+    path: '/emergency',
+    element: <EmergencyPage />,
   },
   {
     path: '*',
