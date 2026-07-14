@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
 
     # ── API keys ──────────────────────────────────────────────────────────────
-    gemini_api_key: str
+    gemini_api_key: str | None = None
 
     # ── Database (wired up in a future module) ───────────────────────────────
     mongodb_uri: str = "mongodb://localhost:27017/stadiumops"
