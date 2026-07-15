@@ -24,7 +24,15 @@ export function AppLayout({ children }) {
       {/* Skip to main content — accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-stadium-500 focus:text-white focus:font-semibold focus:text-sm"
+        onClick={(e) => {
+          e.preventDefault()
+          const target = document.querySelector('#main-content')
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' })
+            target.focus()
+          }
+        }}
+        className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-stadium-500 focus:text-white focus:rounded-lg focus:font-semibold"
       >
         Skip to main content
       </a>

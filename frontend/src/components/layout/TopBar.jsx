@@ -78,6 +78,13 @@ export function TopBar() {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={(e) => {
+                  e.preventDefault()
+                  const target = document.querySelector(link.href)
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium',
                   'text-white/55 hover:text-white hover:bg-white/[0.06]',
@@ -138,7 +145,14 @@ export function TopBar() {
               <a
                 key={link.href}
                 href={link.href}
-                onClick={closeMobileMenu}
+                onClick={(e) => {
+                  e.preventDefault()
+                  closeMobileMenu()
+                  const target = document.querySelector(link.href)
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
                 className={cn(
                   'px-4 py-3.5 rounded-xl text-sm font-medium',
                   'text-white/60 hover:text-white hover:bg-white/[0.06]',

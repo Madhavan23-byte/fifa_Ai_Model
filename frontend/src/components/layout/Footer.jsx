@@ -67,6 +67,17 @@ export function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
+                      onClick={(e) => {
+                        if (link.href.startsWith('#')) {
+                          e.preventDefault()
+                          if (link.href.length > 1) {
+                            const target = document.querySelector(link.href)
+                            if (target) {
+                              target.scrollIntoView({ behavior: 'smooth' })
+                            }
+                          }
+                        }
+                      }}
                       className="text-sm text-white/30 hover:text-white/60 transition-colors"
                     >
                       {link.label}
