@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Menu, X, Zap } from 'lucide-react'
 import { Button } from '@/components/common'
 import { cn } from '@/utils/cn'
@@ -12,6 +12,7 @@ import { NAV_LINKS } from '@/utils/constants'
  * - Accessible: ARIA labels, keyboard navigation, focus-visible rings.
  */
 export function TopBar() {
+  const navigate = useNavigate()
   const [isScrolled, setIsScrolled]           = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -95,6 +96,7 @@ export function TopBar() {
               size="sm"
               className="hidden md:inline-flex"
               aria-label="Open the Command Center application"
+              onClick={() => navigate('/role-select')}
             >
               Enter Command Center
             </Button>
@@ -147,7 +149,7 @@ export function TopBar() {
               </a>
             ))}
             <div className="pt-2 border-t border-white/[0.06] mt-1">
-              <Button variant="primary" size="md" className="w-full">
+              <Button variant="primary" size="md" className="w-full" onClick={() => navigate('/role-select')}>
                 Enter Command Center
               </Button>
             </div>

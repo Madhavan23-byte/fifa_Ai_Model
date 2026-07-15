@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createHashRouter, RouterProvider } from 'react-router-dom'
 import LandingPage           from '@/pages/LandingPage'
 import RoleSelectionPage     from '@/pages/RoleSelectionPage'
 import DashboardPage         from '@/pages/DashboardPage'
@@ -8,7 +8,7 @@ import NavigationPage        from '@/pages/NavigationPage'
 import EmergencyPage         from '@/pages/EmergencyPage'
 import NotFoundPage          from '@/pages/NotFoundPage'
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <LandingPage />,

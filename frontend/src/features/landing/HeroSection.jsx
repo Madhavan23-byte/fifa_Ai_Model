@@ -73,12 +73,14 @@ const HERO_STATS = [
   { value: '5M+',  label: 'Fans Served',  icon: Users  },
 ]
 
-// ─── Component ───────────────────────────────────────────────────────────────
+import { useNavigate } from 'react-router-dom'
+
 /**
  * Hero section — full-viewport landing with headline, CTAs, and stats.
  * Uses original football-pitch SVG background; no copyrighted assets.
  */
 export function HeroSection() {
+  const navigate = useNavigate()
   return (
     <section
       id="home"
@@ -129,6 +131,7 @@ export function HeroSection() {
             size="xl"
             rightIcon={<ArrowRight className="w-5 h-5" />}
             aria-label="Enter the StadiumOps AI Command Center"
+            onClick={() => navigate('/role-select')}
           >
             Enter Command Center
           </Button>

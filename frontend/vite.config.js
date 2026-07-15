@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  base: '/fifa_Ai_Model/',
   plugins: [react()],
   resolve: {
     alias: {
