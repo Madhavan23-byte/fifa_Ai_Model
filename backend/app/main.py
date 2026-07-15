@@ -23,14 +23,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for frontend development
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_kwargs = {
+    "allow_methods": ["*"],
+    "allow_headers": ["*"],
+    "allow_credentials": True,
+}
+if "*" in settings.cors_origins_list:
+    cors_kwargs["allow_origins"] = ["*"]
+    cors_kwargs["allow_credentials"] = False
+else:
+    cors_kwargs["allow_origins"] = settings.cors_origins_list
+
+app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 # API router
 app.include_router(health.router, prefix="/api/v1")
