@@ -1,5 +1,5 @@
 from typing import List, Optional, Literal
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field
 
 class AIResponse(BaseModel):
     """

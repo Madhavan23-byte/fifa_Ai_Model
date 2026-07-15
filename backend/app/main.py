@@ -1,10 +1,18 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from app.config import get_settings
 from app.api import health, ai_query
+from app.core.db import connect_to_mongo, close_mongo_connection
 
 settings = get_settings()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await connect_to_mongo()
+    yield
+    await close_mongo_connection()
 
 app = FastAPI(
     title=settings.app_name,
@@ -12,6 +20,7 @@ app = FastAPI(
     description="Backend foundation for StadiumOps AI",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Enable CORS for frontend development

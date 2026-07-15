@@ -3,11 +3,12 @@
  * Route finder panel — user selects From/To and sees route info.
  */
 import { useState } from 'react'
-import { Navigation, Clock, Footprints, Users, ChevronDown, ArrowRight } from 'lucide-react'
+import { Navigation, Clock, Footprints, Users, ChevronDown, ArrowRight, Sparkles } from 'lucide-react'
 import { LOCATIONS, ROUTES, CROWD_CONFIG } from '@/utils/navigationData'
 import { Button } from '@/components/common'
 import { Badge }  from '@/components/common'
 import { cn }    from '@/utils/cn'
+import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 
 // ─── Select dropdown ───────────────────────────────────────────────────────────
 function LocationSelect({ label, value, onChange, options, id }) {
@@ -119,13 +120,36 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
   const [to,       setTo      ] = useState(preselectedTo)
   const [result,   setResult  ] = useState(null)
   const [searched, setSearched] = useState(false)
+  
+  const [aiData,    setAiData   ] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError,   setAiError  ] = useState(null)
 
-  const handleFind = () => {
+  const handleFind = async () => {
     if (!from || !to) return
     const key  = `${from}_${to}`
     const data = ROUTES[key] || ROUTES['default']
     setResult(data)
     setSearched(true)
+    
+    // Trigger AI Guidance
+    setAiLoading(true)
+    setAiError(null)
+    setAiData(null)
+    
+    try {
+      const fromLabel = LOCATIONS.find(l => l.id === from)?.label || from
+      const toLabel = LOCATIONS.find(l => l.id === to)?.label || to
+      
+      const query = `I need directions from ${fromLabel} to ${toLabel}. Is this route crowded? Are there any better alternatives?`
+      
+      const response = await sendAIQuery({ role: 'fan', query })
+      setAiData(response)
+    } catch (err) {
+      setAiError(err.message)
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   const handleSwap = () => {
@@ -133,6 +157,8 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
     setTo(from)
     setResult(null)
     setSearched(false)
+    setAiData(null)
+    setAiError(null)
   }
 
   return (
@@ -195,6 +221,7 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
       {searched && result && (
         <div className="pt-2 border-t border-white/[0.06]">
           <RouteResult route={result} isAccessible={wheelchairMode} />
+          <AIRouteGuidance loading={aiLoading} error={aiError} data={aiData} />
         </div>
       )}
 
@@ -203,6 +230,80 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
           No route data found for that combination.
         </p>
       )}
+    </div>
+  )
+}
+
+// ─── AI Guidance Component ──────────────────────────────────────────────────────
+function AIRouteGuidance({ loading, error, data }) {
+  if (loading) {
+    return (
+      <div className="glass p-4 rounded-xl border border-white/[0.06] mt-4 flex items-center justify-center space-x-3">
+        <span className="flex h-2 w-2 relative">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-stadium-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-stadium-500"></span>
+        </span>
+        <span className="text-white/60 text-[11px] font-bold uppercase tracking-widest">AI analyzing route...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="glass p-4 rounded-xl border border-red-500/20 bg-red-500/[0.02] mt-4">
+        <p className="text-red-400 text-xs mb-1 font-semibold flex items-center gap-1">
+          <span aria-hidden="true">⚠️</span> AI Guidance Unavailable
+        </p>
+        <p className="text-white/60 text-[11px]">{error}</p>
+      </div>
+    )
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="glass p-4 rounded-xl border border-stadium-500/20 bg-stadium-500/[0.02] mt-4 animate-fade-up">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="w-4 h-4 text-stadium-400" aria-hidden="true" />
+        <span className="text-stadium-400 text-[11px] font-bold uppercase tracking-widest">AI Route Guidance</span>
+      </div>
+      
+      <div className="space-y-3 text-sm text-white/80">
+        <div>
+          <strong className="text-white">Summary:</strong> <span className="text-white/70">{data.summary}</span>
+        </div>
+        <div>
+          <strong className="text-white">Recommendation:</strong> <span className="text-white/70">{data.recommendation}</span>
+        </div>
+        
+        {data.actions && data.actions.length > 0 && (
+          <div>
+            <strong className="text-white">Actions:</strong>
+            <ul className="list-disc pl-5 mt-1 space-y-1 text-white/70 text-xs">
+              {data.actions.map((action, i) => (
+                <li key={i}>{action}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        <div className="flex flex-wrap items-center gap-3 text-[10px] mt-4 pt-3 border-t border-white/[0.06]">
+          <span className={cn(
+             "px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border",
+             data.priority?.toLowerCase() === 'critical' ? "bg-red-500/10 border-red-500/30 text-red-400" :
+             data.priority?.toLowerCase() === 'high' ? "bg-orange-500/10 border-orange-500/30 text-orange-400" :
+             data.priority?.toLowerCase() === 'medium' ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400" :
+             "bg-stadium-500/10 border-stadium-500/30 text-stadium-400"
+          )}>
+            Priority: {data.priority}
+          </span>
+          <span className="text-white/40 uppercase tracking-widest font-bold">Confidence: {data.confidence}%</span>
+        </div>
+        
+        {data.notes && (
+          <p className="text-[11px] text-white/50 italic mt-2">{data.notes}</p>
+        )}
+      </div>
     </div>
   )
 }

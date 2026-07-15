@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { Send, Cpu } from 'lucide-react'
 import { ChatBubble, TypingIndicator, SuggestedPrompts } from '@/components/ai'
-import { FAN_SUGGESTED_PROMPTS, FAN_MOCK_CONVERSATION } from '@/utils/aiDemoData'
+import { FAN_SUGGESTED_PROMPTS } from '@/utils/aiDemoData'
 import { AppLayout } from '@/components/layout'
 import { useAuth } from '@/store/AuthContext'
+import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 
 export default function AIAssistantPage() {
   const { role } = useAuth()
@@ -21,7 +22,7 @@ export default function AIAssistantPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  const handleSend = (text) => {
+  const handleSend = async (text) => {
     if (!text.trim()) return
 
     // Add user message
@@ -37,28 +38,47 @@ export default function AIAssistantPage() {
     setShowSuggestions(false)
     setIsTyping(true)
 
-    // Simulate AI delay
-    setTimeout(() => {
-      let aiResponseContent = 'I can help you with stadium navigation, match times, or facilities. (This is a mock response).'
-      
-      // Basic mock intent matching
-      if (text.toLowerCase().includes('food') || text.toLowerCase().includes('halal')) {
-        aiResponseContent = FAN_MOCK_CONVERSATION[1].content
-      } else if (text.toLowerCase().includes('seat')) {
-        aiResponseContent = 'Your seat is in **Section 104, Row G, Seat 24**.\n\nPlease proceed to **Gate 2**, then take the concourse ramp to Level 1. Would you like walking directions on the stadium map?'
-      } else if (text.toLowerCase().includes('kickoff') || text.toLowerCase().includes('start')) {
-        aiResponseContent = 'The match between Brazil and Germany kicks off at **20:00 EST**.\n\nThe stadium gates are already open, and pre-match entertainment begins at 19:15.'
+    try {
+      // Real Gemini API call via FastAPI backend
+      const data = await sendAIQuery({ role: 'fan', query: text })
+
+      let actionsText = '';
+      if (data.actions && data.actions.length > 0) {
+        actionsText = `### Actions\n` + data.actions.map(a => `- ${a}`).join('\n');
       }
+
+      const contentParts = [
+        `### Summary\n${data.summary}`,
+        `### Recommendation\n${data.recommendation}`,
+        actionsText,
+        `- **Priority:** ${data.priority}`,
+        `- **Confidence:** ${data.confidence}%`,
+      ];
+      if (data.notes) {
+        contentParts.push(`- **Notes:** ${data.notes}`);
+      }
+
+      const content = contentParts.filter(Boolean).join('\n\n')
 
       const aiMsg = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: aiResponseContent,
+        content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages(prev => [...prev, aiMsg])
+    } catch (err) {
+      setInputValue(text)
+      const errMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `⚠️ **Unable to reach the AI backend.**\n\n${err.message}\n\nYour message was kept in the input box. Please verify your connection and click Send to retry.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }
+      setMessages(prev => [...prev, errMsg])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+    }
   }
 
   const handleKeyDown = (e) => {

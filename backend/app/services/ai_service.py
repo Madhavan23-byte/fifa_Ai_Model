@@ -1,7 +1,5 @@
 import json
 import logging
-from typing import Dict, Any
-
 from fastapi import HTTPException
 from google.genai import types
 
@@ -80,13 +78,3 @@ async def process_ai_query(request: AIQueryRequest) -> AIResponse:
             detail="Failed to generate AI response. Please try again later."
         )
 
-# Kept for backwards compatibility / future direct usage
-async def generate_fan_response(user_query: str) -> AIResponse:
-    return await process_ai_query(AIQueryRequest(role="fan", query=user_query))
-
-async def generate_volunteer_response(user_query: str) -> AIResponse:
-    return await process_ai_query(AIQueryRequest(role="volunteer", query=user_query))
-
-async def generate_organizer_response(context_data: dict) -> AIResponse:
-    query = json.dumps(context_data)
-    return await process_ai_query(AIQueryRequest(role="organizer", query=query))

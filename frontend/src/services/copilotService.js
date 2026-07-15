@@ -17,6 +17,6 @@ import api from './api'
  * }>}
  */
 export async function sendCopilotMessage({ role = 'organizer', query }) {
-  const { data } = await api.post('/copilot/chat', { role, query })
+  const { data } = await api.post('/ai/query', { role, query })
   return data
 }

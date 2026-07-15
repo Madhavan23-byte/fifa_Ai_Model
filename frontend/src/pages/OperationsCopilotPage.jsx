@@ -26,7 +26,6 @@ export default function OperationsCopilotPage() {
   const handleSend = async (text) => {
     if (!text.trim() || isTyping) return
 
-    setApiError(null)
     const userMsg = {
       id: Date.now().toString(),
       role: 'user',
@@ -43,28 +42,41 @@ export default function OperationsCopilotPage() {
       const data = await sendCopilotMessage({ role: 'organizer', query: text })
 
       // Format structured JSON into a readable chat bubble
-      const content = [
-        `### Situation\n${data.situation}`,
-        `### Recommended Action\n${data.recommendation}`,
-        `### Reason\n${data.reason}`,
+      let actionsText = '';
+      if (data.actions && data.actions.length > 0) {
+        actionsText = `### Actions\n` + data.actions.map(a => `- ${a}`).join('\n');
+      }
+
+      const contentParts = [
+        `### Summary\n${data.summary}`,
+        `### Recommendation\n${data.recommendation}`,
+        actionsText,
         `- **Priority:** ${data.priority}`,
-        `- **Expected Impact:** ${data.impact}`,
-      ].join('\n\n')
+        `- **Confidence:** ${data.confidence}%`,
+      ];
+      if (data.notes) {
+        contentParts.push(`- **Notes:** ${data.notes}`);
+      }
+
+      const content = contentParts.filter(Boolean).join('\n\n')
 
       const aiMsg = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        actionRequired: data.priority === 'CRITICAL',
+        actionRequired: typeof data.priority === 'string' && data.priority.toLowerCase() === 'critical',
       }
       setMessages(prev => [...prev, aiMsg])
     } catch (err) {
+      // Restore input text so user can retry
+      setInputValue(text)
+      
       // Show error inline in chat — never crash the UI
       const errMsg = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `⚠️ **Unable to reach the AI backend.**\n\n${err.message}\n\nPlease ensure the FastAPI server is running on \`http://localhost:8000\`.`,
+        content: `⚠️ **Unable to reach the AI backend.**\n\n${err.message}\n\nYour message was kept in the input box. Please verify your connection and click Send to retry.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         actionRequired: false,
       }
