@@ -1,8 +1,9 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /**
  * features/emergency/FanEmergencyPanel.jsx
  * Large accessible emergency action buttons for fans.
  */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   HeartPulse, AlertTriangle, Search, ShieldAlert, DoorOpen, Users,
 } from 'lucide-react'
@@ -90,7 +91,7 @@ function IncidentReportingModal({ isOpen, onClose }) {
       
       if (!res.ok) throw new Error('Backend failed');
       setStatus('success');
-    } catch (err) {
+    } catch {
       // Gracefully fallback to localStorage if backend is unavailable
       const existing = JSON.parse(localStorage.getItem('stadium_offline_incidents') || '[]');
       existing.push(payload);
@@ -128,8 +129,8 @@ function IncidentReportingModal({ isOpen, onClose }) {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Incident Type</label>
-                <select value={type} onChange={e => setType(e.target.value)} className="w-full appearance-none glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-[#060c1a]">
+                <label htmlFor="incident-type" className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Incident Type</label>
+                <select id="incident-type" value={type} onChange={e => setType(e.target.value)} className="w-full appearance-none glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-[#060c1a]">
                    <option value="medical">Medical Emergency</option>
                    <option value="security">Security Issue / Disturbance</option>
                    <option value="maintenance">Maintenance / Spill</option>
@@ -138,13 +139,13 @@ function IncidentReportingModal({ isOpen, onClose }) {
               </div>
               
               <div>
-                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Location</label>
-                <input required type="text" placeholder="e.g. Section 120, Row G" value={location} onChange={e => setLocation(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02]" />
+                <label htmlFor="incident-location" className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Location</label>
+                <input id="incident-location" required type="text" placeholder="e.g. Section 120, Row G" value={location} onChange={e => setLocation(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02]" />
               </div>
 
               <div>
-                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Description</label>
-                <textarea required rows={3} placeholder="Briefly describe what happened..." value={desc} onChange={e => setDesc(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02] resize-none" />
+                <label htmlFor="incident-desc" className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Description</label>
+                <textarea id="incident-desc" required rows={3} placeholder="Briefly describe what happened..." value={desc} onChange={e => setDesc(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02] resize-none" />
               </div>
               
               <button disabled={status === 'submitting' || !location || !desc} type="submit" className="w-full bg-stadium-500 text-black font-bold text-sm py-3 rounded-xl hover:bg-stadium-400 disabled:opacity-50 transition-colors">

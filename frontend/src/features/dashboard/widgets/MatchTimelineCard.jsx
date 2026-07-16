@@ -46,7 +46,7 @@ export function MatchTimelineCard() {
               className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] animate-fade-in"
             >
               <div className="w-10 text-right text-stadium-400 font-mono font-bold text-sm shrink-0">
-                {ev.minute}'
+                {ev.minute}&apos;
               </div>
               <div className="text-lg shrink-0" aria-label={EVENT_LABEL[ev.type]}>
                 {EVENT_ICON[ev.type]}

@@ -1,5 +1,5 @@
 import { useMatch } from '@/store/MatchContext'
-import { Activity, Goal, FileWarning, ArrowRightLeft } from 'lucide-react'
+import { Activity, FileWarning, ArrowRightLeft } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
 function StatRow({ label, home, away, format = (v) => v, reverse = false }) {

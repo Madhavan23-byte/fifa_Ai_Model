@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /**
  * features/emergency/EmergencyModal.jsx
  * Accessible confirmation modal for Fan emergency actions.

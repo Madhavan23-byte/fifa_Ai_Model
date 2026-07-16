@@ -97,7 +97,7 @@ export function AppHeader({ onMenuToggle }) {
             <span className="text-white/80 font-bold">{homeTeam.flag} {homeTeam.code}</span>
             <span className="text-white/30 mx-1.5">{match.score.home}–{match.score.away}</span>
             <span className="text-white/80 font-bold">{awayTeam.code} {awayTeam.flag}</span>
-            <span className="text-white/25 ml-1.5 font-mono">{minute}'</span>
+            <span className="text-white/25 ml-1.5 font-mono">{minute}&apos;</span>
           </span>
         </div>
       </div>

@@ -62,7 +62,7 @@ export function MatchCard() {
           <span className="text-white/35">{group}</span>
           <span className="text-white/20 mx-0.5">·</span>
           <Clock className="w-3.5 h-3.5 text-white/30" aria-hidden="true" />
-          <span className="text-white font-bold">{minute}'</span>
+          <span className="text-white font-bold">{minute}&apos;</span>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export function MatchCard() {
           <p className="text-white/25 text-[10px] font-black tracking-widest uppercase">Match Events</p>
           {events.slice(-3).map((ev) => (
             <div key={`${ev.minute}-${ev.type}`} className="flex items-center gap-2 text-xs">
-              <span className="text-white/25 w-7 text-right font-mono flex-shrink-0">{ev.minute}'</span>
+              <span className="text-white/25 w-7 text-right font-mono flex-shrink-0">{ev.minute}&apos;</span>
               <span aria-hidden="true">{EVENT_ICON[ev.type] ?? '•'}</span>
               <span className="text-white/55 font-medium truncate">{ev.player}</span>
               <span className={cn(

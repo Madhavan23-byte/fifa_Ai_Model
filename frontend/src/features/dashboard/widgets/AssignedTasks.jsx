@@ -30,7 +30,7 @@ const TASK_CFG = {
  */
 export function AssignedTasks() {
   const { name, volunteerId, zone, gate, shift, role: volRole,
-    supervisor, emergency, tasks } = VOLUNTEER_ASSIGNMENT
+    emergency, tasks } = VOLUNTEER_ASSIGNMENT
 
   const doneCount = tasks.filter((t) => t.status === 'completed').length
 

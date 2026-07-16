@@ -1,5 +1,5 @@
 import { ArrowRight, ChevronDown, Zap, Trophy, Users } from 'lucide-react'
-import { Button, Badge } from '@/components/common'
+import { Button } from '@/components/common'
 
 // ─── Football pitch SVG — original design ────────────────────────────────────
 function PitchLines() {

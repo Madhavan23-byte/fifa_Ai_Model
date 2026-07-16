@@ -1,4 +1,4 @@
-import { User, Cpu, Sparkles } from 'lucide-react'
+import { User, Sparkles } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
 /**

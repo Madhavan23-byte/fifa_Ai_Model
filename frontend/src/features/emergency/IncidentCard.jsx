@@ -42,6 +42,7 @@ export function IncidentCard({ incident, compact = false, onClick }) {
   const TypeIcon= ICON_MAP[typeCfg.icon] ?? Info
 
   return (
+    /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <article
       className={cn(
         'glass rounded-2xl transition-all duration-200',

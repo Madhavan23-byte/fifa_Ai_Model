@@ -19,34 +19,10 @@ export default function AIAssistantPage() {
   
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [showSuggestions, setShowSuggestions] = useState(messages.length === 0)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Save to sessionStorage whenever messages change
-  useEffect(() => {
-    sessionStorage.setItem('fan_ai_history', JSON.stringify(messages))
-    setShowSuggestions(messages.length === 0)
-  }, [messages])
-
-  // Handle autoFocus and prefill from location state
-  useEffect(() => {
-    if (location.state?.autoFocus) {
-      setTimeout(() => {
-        inputRef.current?.focus()
-      }, 100)
-    }
-    if (location.state?.prefill && messages.length === 0) {
-      handleSend(location.state.prefill)
-      // clear state so it doesn't refire on reload
-      window.history.replaceState({}, document.title)
-    }
-  }, [location.state])
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isTyping])
+  const showSuggestions = messages.length === 0
 
   const generateOfflineGuidance = (query) => {
     const q = query.toLowerCase()
@@ -77,12 +53,10 @@ export default function AIAssistantPage() {
     
     setMessages(prev => [...prev, userMsg])
     setInputValue('')
-    setShowSuggestions(false)
     setIsTyping(true)
 
     try {
       // Build conversation history (last 4 messages for context + system prompt)
-      // We don't change the backend schema, we just bundle it in the query
       const currentHistory = messages.slice(-4)
       let contextQuery = ''
       if (currentHistory.length > 0) {
@@ -123,7 +97,7 @@ export default function AIAssistantPage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages(prev => [...prev, aiMsg])
-    } catch (err) {
+    } catch {
       // Offline / Network Error Handling
       const offlineGuidance = generateOfflineGuidance(text)
       const errMsg = {
@@ -140,6 +114,32 @@ export default function AIAssistantPage() {
     }
   }
 
+  // Save to sessionStorage whenever messages change
+  useEffect(() => {
+    sessionStorage.setItem('fan_ai_history', JSON.stringify(messages))
+  }, [messages])
+
+  // Handle autoFocus and prefill from location state
+  useEffect(() => {
+    if (location.state?.autoFocus) {
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+    if (location.state?.prefill && messages.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      handleSend(location.state.prefill)
+      // clear state so it doesn't refire on reload
+      window.history.replaceState({}, document.title)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isTyping])
+
   const handleRetry = (failedQuery) => {
     handleSend(failedQuery)
   }
@@ -150,6 +150,8 @@ export default function AIAssistantPage() {
       handleSend(inputValue)
     }
   }
+
+  if (!role) return <Navigate to="/role-select" replace />
 
   return (
     <AppLayout>

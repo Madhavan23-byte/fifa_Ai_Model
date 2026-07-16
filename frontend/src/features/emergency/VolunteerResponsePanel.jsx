@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/common'
 import { Badge }  from '@/components/common'
-import { VOLUNTEER_INCIDENT, PRIORITY_CONFIG, STATUS_CONFIG } from '@/utils/emergencyData'
+import { VOLUNTEER_INCIDENT, PRIORITY_CONFIG } from '@/utils/emergencyData'
 import { cn } from '@/utils/cn'
 
 // ─── Response steps ────────────────────────────────────────────────────────────

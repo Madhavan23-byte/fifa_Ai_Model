@@ -5,18 +5,16 @@
 import { useState } from 'react'
 import {
   AlertOctagon, Users, CheckCircle2, Clock, Filter,
-  HeartPulse, Search, ShieldAlert, Flame, Info, MapPin,
 } from 'lucide-react'
-import { Badge } from '@/components/common'
+
 import { IncidentCard } from './IncidentCard'
 import {
   ACTIVE_INCIDENTS, INCIDENT_TIMELINE, ORGANIZER_STATS,
-  PRIORITY_CONFIG, STATUS_CONFIG, INCIDENT_TYPE_CONFIG,
 } from '@/utils/emergencyData'
 import { cn } from '@/utils/cn'
 
 const STAT_ICON_MAP  = { AlertOctagon, Users, CheckCircle2, Clock }
-const TIMELINE_ICONS = { HeartPulse, Search, ShieldAlert, Flame, Info, MapPin }
+
 
 const PRIORITY_FILTERS = [
   { id: 'all',      label: 'All'      },
@@ -58,8 +56,6 @@ function StatCard({ label, value, color, icon }) {
 
 // ─── Timeline item ─────────────────────────────────────────────────────────────
 function TimelineItem({ item, isLast }) {
-  const typeCfg = INCIDENT_TYPE_CONFIG[item.type] ?? INCIDENT_TYPE_CONFIG.general
-  const Icon    = TIMELINE_ICONS[typeCfg.icon] ?? Info
 
   const dotColor =
     item.status === 'critical' ? 'bg-red-500'

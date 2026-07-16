@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Trophy, Activity, Info, Users, Flag, ThermometerSun, ShieldAlert, Sparkles, MapPin } from 'lucide-react'
+import { Trophy, Activity, Users, Flag, ThermometerSun, ShieldAlert, Sparkles, MapPin } from 'lucide-react'
 import { AppLayout } from '@/components/layout'
 import { useAuth } from '@/store/AuthContext'
 import { useMatch } from '@/store/MatchContext'
 import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
-import { cn } from '@/utils/cn'
 
 function StatBar({ label, home, away }) {
   const total = home + away
@@ -41,7 +40,7 @@ export default function MatchInfoPage() {
         const query = `Analyze this match state: ${matchState.homeTeam.code} ${matchState.score.home} - ${matchState.score.away} ${matchState.awayTeam.code}. Minute: ${matchState.minute}. Give a tactical insight.`
         const response = await sendAIQuery({ role, query })
         setAiInsights(response)
-      } catch (err) {
+      } catch {
         setAiInsights({ summary: "Insight generation failed.", recommendation: "Check connection." })
       } finally {
         setLoadingInsights(false)
@@ -184,7 +183,7 @@ export default function MatchInfoPage() {
                     ) : (
                        matchState.events.slice().reverse().map((ev, i) => (
                           <div key={i} className="flex items-center gap-3 text-sm">
-                             <span className="text-stadium-400 font-bold w-6">{ev.minute}'</span>
+                             <span className="text-stadium-400 font-bold w-6">{ev.minute}&apos;</span>
                              <span className="text-white/40">{ev.team}</span>
                              <span className="text-white truncate">
                                 {ev.type === 'goal' && '⚽ Goal by '}

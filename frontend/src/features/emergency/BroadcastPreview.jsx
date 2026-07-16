@@ -14,7 +14,6 @@ const LANG_KEYS = ['en', 'es', 'fr', 'hi']
  */
 export function BroadcastPreview() {
   const [activeLang, setActiveLang] = useState('en')
-  const msg = BROADCAST_MESSAGES[activeLang]
 
   return (
     <div className="glass rounded-2xl overflow-hidden">

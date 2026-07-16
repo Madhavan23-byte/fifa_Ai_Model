@@ -24,31 +24,23 @@ export default function NavigationPage() {
   const location = useLocation()
   
   const [wheelchairMode,  setWheelchairMode ] = useState(false)
-  const [selectedArea,    setSelectedArea   ] = useState(null)
-  const [routeTo,         setRouteTo        ] = useState('')
-  const [facilityFilter,  setFacilityFilter ] = useState(false)
+  const [selectedArea,    setSelectedArea   ] = useState(location.state?.highlightDest ? 'east' : null)
+  const [routeTo,         setRouteTo        ] = useState(location.state?.preselectTo || '')
+  const [facilityFilter,  setFacilityFilter ] = useState(location.state?.filterCategory === 'facilities')
   const [activeRoute,     setActiveRoute    ] = useState(null)
 
   // Handle QuickAction routing state
   useEffect(() => {
     let timeoutId;
     if (location.state?.preselectTo) {
-      setRouteTo(location.state.preselectTo)
-      if (location.state.highlightDest) {
-        setSelectedArea('east') // example block for Seat 42B
-      }
       // Scroll to route finder on mobile if pre-selected
       timeoutId = setTimeout(() => {
         document.getElementById('route-finder-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 100)
     }
-    if (location.state?.filterCategory === 'facilities') {
-      setFacilityFilter(true)
-    }
     return () => {
       if (timeoutId) clearTimeout(timeoutId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state])
   
   if (!role) return <Navigate to="/role-select" replace />

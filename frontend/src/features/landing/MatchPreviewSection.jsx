@@ -1,4 +1,4 @@
-import { Clock, MapPin, CloudSun, Radio } from 'lucide-react'
+import { Clock, MapPin, Radio } from 'lucide-react'
 import { Badge } from '@/components/common'
 import { SectionTitle, PageContainer } from '@/components/ui'
 import { useMatch } from '@/store/MatchContext'

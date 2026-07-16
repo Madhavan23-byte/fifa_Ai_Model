@@ -4,9 +4,8 @@
  */
 import { useState } from 'react'
 import { Navigation, Clock, Footprints, Users, ChevronDown, ArrowRight, Sparkles } from 'lucide-react'
-import { LOCATIONS, ROUTES, CROWD_CONFIG } from '@/utils/navigationData'
+import { LOCATIONS, CROWD_CONFIG } from '@/utils/navigationData'
 import { Button } from '@/components/common'
-import { Badge }  from '@/components/common'
 import { cn }    from '@/utils/cn'
 import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 
@@ -236,10 +235,10 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '', onRouteCalcula
         {/* Route Preference */}
         {!wheelchairMode && (
           <div className="pt-2">
-            <label className="text-white/40 text-[11px] font-bold uppercase tracking-widest block mb-1.5">
+            <div id="route-pref-label" className="text-white/40 text-[11px] font-bold uppercase tracking-widest block mb-1.5">
               Preference
-            </label>
-            <div className="flex gap-2 bg-white/[0.04] p-1 rounded-xl">
+            </div>
+            <div className="flex gap-2 bg-white/[0.04] p-1 rounded-xl" role="group" aria-labelledby="route-pref-label">
               {['shortest', 'fastest', 'low-crowd'].map(m => (
                 <button
                   key={m}
