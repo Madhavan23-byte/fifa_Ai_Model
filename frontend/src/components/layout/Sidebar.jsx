@@ -13,21 +13,21 @@ const ROLE_NAV = {
     { icon: MessageCircle,   label: 'AI Assistant', href: '/assistant'  },
     { icon: MapPin,          label: 'Navigation',   href: '/navigation' },
     { icon: Shield,          label: 'Emergency',    href: '/emergency'  },
-    { icon: Activity,        label: 'Match Info',   href: '/match'      },
+    { icon: Activity,        label: 'Match Info',   href: '/match-info' },
   ],
   [ROLES.VOLUNTEER]: [
     { icon: LayoutDashboard, label: 'Dashboard',    href: '/dashboard'  },
     { icon: MessageCircle,   label: 'AI Assistant', href: '/assistant'  },
     { icon: MapPin,          label: 'Navigation',   href: '/navigation' },
     { icon: Shield,          label: 'Emergency',    href: '/emergency'  },
-    { icon: Activity,        label: 'Match Info',   href: '/match'      },
+    { icon: Activity,        label: 'Match Info',   href: '/match-info' },
   ],
   [ROLES.ORGANIZER]: [
     { icon: LayoutDashboard, label: 'Dashboard',          href: '/dashboard'  },
     { icon: Cpu,             label: 'Operations Copilot', href: '/copilot'    },
     { icon: MapPin,          label: 'Navigation',         href: '/navigation' },
     { icon: Shield,          label: 'Emergency',          href: '/emergency'  },
-    { icon: Activity,        label: 'Match Info',         href: '/match'      },
+    { icon: Activity,        label: 'Match Info',         href: '/match-info' },
   ]
 }
 

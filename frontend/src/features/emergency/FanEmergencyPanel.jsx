@@ -2,7 +2,7 @@
  * features/emergency/FanEmergencyPanel.jsx
  * Large accessible emergency action buttons for fans.
  */
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   HeartPulse, AlertTriangle, Search, ShieldAlert, DoorOpen, Users,
 } from 'lucide-react'
@@ -59,7 +59,6 @@ function IncidentReportingModal({ isOpen, onClose }) {
   const [status, setStatus] = useState('idle') // idle, submitting, success, offline_success
   
   // Close on Escape
-  import { useEffect, useRef } from 'react'
   useEffect(() => {
     if (!isOpen) return
     const handler = (e) => { if (e.key === 'Escape') onClose() }
