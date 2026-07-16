@@ -43,6 +43,10 @@ const router = createHashRouter([
     element: <MatchInfoPage />,
   },
   {
+    path: '/match',
+    element: <MatchInfoPage />,
+  },
+  {
     path: '*',
     element: <NotFoundPage />,
   },
