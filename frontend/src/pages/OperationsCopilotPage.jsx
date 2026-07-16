@@ -12,8 +12,7 @@ import { cn } from '@/utils/cn'
 export default function OperationsCopilotPage() {
   const { role } = useAuth()
   const location = useLocation()
-  if (!role) return <Navigate to="/role-select" replace />
-
+  
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -32,6 +31,8 @@ export default function OperationsCopilotPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
+
+  if (!role) return <Navigate to="/role-select" replace />
 
   const handleSend = async (text) => {
     if (!text.trim() || isTyping) return

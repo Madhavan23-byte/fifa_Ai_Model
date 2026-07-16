@@ -28,8 +28,6 @@ function StatBar({ label, home, away }) {
 
 export default function MatchInfoPage() {
   const { role } = useAuth()
-  if (!role) return <Navigate to="/role-select" replace />
-  
   const matchState = useMatch()
   
   const [aiInsights, setAiInsights] = useState(null)
@@ -54,6 +52,8 @@ export default function MatchInfoPage() {
     fetchInsights()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchState.status])
+
+  if (!role) return <Navigate to="/role-select" replace />
 
   return (
     <AppLayout>

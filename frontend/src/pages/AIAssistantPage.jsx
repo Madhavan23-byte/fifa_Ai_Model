@@ -10,7 +10,6 @@ import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 export default function AIAssistantPage() {
   const { role } = useAuth()
   const location = useLocation()
-  if (!role) return <Navigate to="/role-select" replace />
 
   // Load from sessionStorage
   const [messages, setMessages] = useState(() => {
