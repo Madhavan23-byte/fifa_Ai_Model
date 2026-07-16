@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn'
  * Renders user messages as simple aligned bubbles, and assistant messages
  * with a distinct avatar and formatted markdown-like content.
  */
-export function ChatBubble({ role, content, actionRequired }) {
+export function ChatBubble({ role, content, actionRequired, onRetry }) {
   const isUser = role === 'user'
 
   return (
@@ -56,6 +56,18 @@ export function ChatBubble({ role, content, actionRequired }) {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             <span className="text-[11px] font-bold tracking-widest uppercase text-red-400">Action Required</span>
+          </div>
+        )}
+
+        {/* Retry Button */}
+        {onRetry && (
+          <div className="mt-4 pt-3 border-t border-red-500/20 flex items-center">
+            <button 
+              onClick={onRetry}
+              className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-widest bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20"
+            >
+              Retry Connection
+            </button>
           </div>
         )}
       </div>

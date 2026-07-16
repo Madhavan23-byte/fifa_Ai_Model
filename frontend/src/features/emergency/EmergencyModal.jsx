@@ -112,6 +112,12 @@ export function EmergencyModal({ isOpen, onClose, action }) {
           {modal.phone && (
             <a
               href={`tel:${modal.phone}`}
+              onClick={(e) => {
+                if (window.matchMedia('(pointer: fine)').matches) {
+                  e.preventDefault();
+                  alert(`Calling ${modal.phone}... \n\n(Simulated call on desktop.)`);
+                }
+              }}
               className="flex items-center gap-3 glass rounded-xl px-4 py-3 hover:bg-white/[0.07] transition-colors group"
               aria-label={`Call ${modal.phone}`}
             >

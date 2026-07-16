@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import { useAuth, ROLE_CONFIG } from '@/store/AuthContext'
-import { NOTIFICATIONS, LIVE_MATCH } from '@/utils/dashboardData'
+import { NOTIFICATIONS } from '@/utils/dashboardData'
+import { useMatch } from '@/store/MatchContext'
 import { cn } from '@/utils/cn'
 
 // ── Notification severity styling ─────────────────────────────────────────────
@@ -53,7 +54,8 @@ export function AppHeader({ onMenuToggle }) {
   const roleConf         = role ? ROLE_CONFIG[role] : null
   const RoleIcon         = roleConf?.icon
   const alertCount       = NOTIFICATIONS.filter((n) => n.severity !== 'info').length
-  const { homeTeam, awayTeam, minute } = LIVE_MATCH
+  const match = useMatch()
+  const { homeTeam, awayTeam, minute } = match
 
   // Close notification panel on outside click
   useEffect(() => {
@@ -93,7 +95,7 @@ export function AppHeader({ onMenuToggle }) {
           </span>
           <span className="text-xs font-medium text-white/55">
             <span className="text-white/80 font-bold">{homeTeam.flag} {homeTeam.code}</span>
-            <span className="text-white/30 mx-1.5">{homeTeam.score}–{awayTeam.score}</span>
+            <span className="text-white/30 mx-1.5">{match.score.home}–{match.score.away}</span>
             <span className="text-white/80 font-bold">{awayTeam.code} {awayTeam.flag}</span>
             <span className="text-white/25 ml-1.5 font-mono">{minute}'</span>
           </span>

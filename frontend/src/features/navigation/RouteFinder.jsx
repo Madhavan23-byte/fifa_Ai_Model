@@ -10,6 +10,8 @@ import { Badge }  from '@/components/common'
 import { cn }    from '@/utils/cn'
 import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 
+import { calculateRoute } from '@/utils/routeEngine'
+
 // ─── Select dropdown ───────────────────────────────────────────────────────────
 function LocationSelect({ label, value, onChange, options, id }) {
   return (
@@ -45,12 +47,17 @@ function LocationSelect({ label, value, onChange, options, id }) {
 }
 
 // ─── Route result card ─────────────────────────────────────────────────────────
-function RouteResult({ route, isAccessible }) {
-  const crowdCfg = CROWD_CONFIG[route.crowdStatus]
-  const steps    = isAccessible ? (route.accessibleSteps || route.steps) : route.steps
+function RouteResult({ route }) {
+  const crowdCfg = CROWD_CONFIG[route.crowdStatus] || CROWD_CONFIG.low
+  const steps    = route.steps
 
   return (
     <div className="space-y-4 animate-fade-up">
+      {/* Target Destination Label (useful if "Nearest" was selected) */}
+      <div className="text-xs text-white/60 mb-2">
+        Navigating to: <strong className="text-white">{route.toLabel}</strong>
+      </div>
+
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -85,12 +92,29 @@ function RouteResult({ route, isAccessible }) {
         </span>
       </div>
 
+      {/* ETA and Accessibility row */}
+      <div className="flex items-center justify-between px-3 py-2 bg-white/[0.04] rounded-lg border border-white/[0.06]">
+        <div className="text-xs text-white/70">ETA: <strong className="text-white">{route.eta}</strong></div>
+        {route.mode === 'accessible' && (
+          <div className="text-xs font-bold text-blue-400 flex items-center gap-1">
+            <span>♿</span> Accessible Route Confirmed
+          </div>
+        )}
+      </div>
+
+      {/* Alternative Route */}
+      {route.alternativeRoute && (
+        <div className="text-xs text-white/50 italic px-1">
+          Alternative: {route.alternativeRoute}
+        </div>
+      )}
+
       {/* Step-by-step */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Navigation className="w-3.5 h-3.5 text-stadium-400" aria-hidden="true" />
           <span className="text-white/50 text-[11px] font-bold uppercase tracking-widest">
-            {isAccessible ? 'Accessible Route' : 'Suggested Route'}
+            {route.mode === 'accessible' ? 'Accessible Route' : 'Suggested Route'}
           </span>
         </div>
         <ol className="space-y-2">
@@ -114,10 +138,12 @@ function RouteResult({ route, isAccessible }) {
  *
  * @param {boolean}  wheelchairMode - Show accessible route steps
  * @param {string}   preselectedTo  - Pre-fill To field (from quick nav click)
+ * @param {Function} onRouteCalculated - Callback to pass the route path up to the map
  */
-export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
+export function RouteFinder({ wheelchairMode, preselectedTo = '', onRouteCalculated }) {
   const [from,     setFrom    ] = useState('')
   const [to,       setTo      ] = useState(preselectedTo)
+  const [mode,     setMode    ] = useState('shortest')
   const [result,   setResult  ] = useState(null)
   const [searched, setSearched] = useState(false)
   
@@ -127,21 +153,23 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
 
   const handleFind = async () => {
     if (!from || !to) return
-    const key  = `${from}_${to}`
-    const data = ROUTES[key] || ROUTES['default']
-    setResult(data)
-    setSearched(true)
     
-    // Trigger AI Guidance
-    setAiLoading(true)
-    setAiError(null)
-    setAiData(null)
+    const finalMode = wheelchairMode ? 'accessible' : mode
     
     try {
-      const fromLabel = LOCATIONS.find(l => l.id === from)?.label || from
-      const toLabel = LOCATIONS.find(l => l.id === to)?.label || to
+      const data = calculateRoute(from, to, finalMode)
+      setResult(data)
+      setSearched(true)
+      if (onRouteCalculated) {
+        onRouteCalculated(data)
+      }
       
-      const query = `I need directions from ${fromLabel} to ${toLabel}. Is this route crowded? Are there any better alternatives?`
+      // Trigger AI Guidance
+      setAiLoading(true)
+      setAiError(null)
+      setAiData(null)
+      
+      const query = `I need directions from ${data.fromLabel} to ${data.toLabel} using the ${finalMode} route. Is this route crowded? Are there any better alternatives?`
       
       const response = await sendAIQuery({ role: 'fan', query })
       setAiData(response)
@@ -159,6 +187,7 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
     setSearched(false)
     setAiData(null)
     setAiError(null)
+    if (onRouteCalculated) onRouteCalculated(null)
   }
 
   return (
@@ -180,7 +209,7 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
           id="from-location"
           label="From"
           value={from}
-          onChange={(v) => { setFrom(v); setResult(null); setSearched(false) }}
+          onChange={(v) => { setFrom(v); setResult(null); setSearched(false); if (onRouteCalculated) onRouteCalculated(null) }}
           options={LOCATIONS}
         />
 
@@ -200,9 +229,32 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
           id="to-location"
           label="To"
           value={to}
-          onChange={(v) => { setTo(v); setResult(null); setSearched(false) }}
+          onChange={(v) => { setTo(v); setResult(null); setSearched(false); if (onRouteCalculated) onRouteCalculated(null) }}
           options={LOCATIONS}
         />
+        
+        {/* Route Preference */}
+        {!wheelchairMode && (
+          <div className="pt-2">
+            <label className="text-white/40 text-[11px] font-bold uppercase tracking-widest block mb-1.5">
+              Preference
+            </label>
+            <div className="flex gap-2 bg-white/[0.04] p-1 rounded-xl">
+              {['shortest', 'fastest', 'low-crowd'].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setMode(m)}
+                  className={cn(
+                    "flex-1 text-[11px] font-bold uppercase tracking-widest py-1.5 rounded-lg transition-colors",
+                    mode === m ? "bg-stadium-500 text-[#040b14]" : "text-white/50 hover:text-white/80"
+                  )}
+                >
+                  {m.replace('-', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <Button
@@ -210,7 +262,7 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
         size="md"
         className="w-full"
         onClick={handleFind}
-        disabled={!from || !to || from === to}
+        disabled={!from || !to || from === to || (to.startsWith('nearest-') && from.startsWith('nearest-'))}
         leftIcon={<Navigation className="w-4 h-4" />}
         aria-label="Find route"
       >
@@ -220,7 +272,7 @@ export function RouteFinder({ wheelchairMode, preselectedTo = '' }) {
       {/* Result */}
       {searched && result && (
         <div className="pt-2 border-t border-white/[0.06]">
-          <RouteResult route={result} isAccessible={wheelchairMode} />
+          <RouteResult route={result} />
           <AIRouteGuidance loading={aiLoading} error={aiError} data={aiData} />
         </div>
       )}

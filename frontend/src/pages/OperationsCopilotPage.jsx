@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { Send, Zap, BarChart2, ShieldAlert } from 'lucide-react'
 import { ChatBubble, TypingIndicator, SuggestedPrompts } from '@/components/ai'
 import { COPILOT_SUGGESTED_PROMPTS } from '@/utils/aiDemoData'
@@ -11,12 +11,22 @@ import { cn } from '@/utils/cn'
 
 export default function OperationsCopilotPage() {
   const { role } = useAuth()
+  const location = useLocation()
   if (!role) return <Navigate to="/role-select" replace />
 
   const [messages, setMessages] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (location.state?.autoFocus) {
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [location.state])
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -171,6 +181,7 @@ export default function OperationsCopilotPage() {
           <div className="p-4 sm:p-6 bg-gradient-to-t from-[#040b14] to-transparent border-t border-white/[0.04]">
             <div className="relative flex items-end gap-3 max-w-4xl mx-auto">
               <textarea
+                ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}

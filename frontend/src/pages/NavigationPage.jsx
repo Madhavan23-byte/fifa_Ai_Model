@@ -2,8 +2,8 @@
  * pages/NavigationPage.jsx
  * Smart Stadium Navigation — full interactive wayfinding page for fans.
  */
-import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 import { MapPin } from 'lucide-react'
 import { AppLayout }          from '@/components/layout'
 import { useAuth }            from '@/store/AuthContext'
@@ -21,16 +21,40 @@ import {
  */
 export default function NavigationPage() {
   const { role } = useAuth()
+  const location = useLocation()
+  
   if (!role) return <Navigate to="/role-select" replace />
 
   const [wheelchairMode,  setWheelchairMode ] = useState(false)
   const [selectedArea,    setSelectedArea   ] = useState(null)
   const [routeTo,         setRouteTo        ] = useState('')
+  const [facilityFilter,  setFacilityFilter ] = useState(false)
+  const [activeRoute,     setActiveRoute    ] = useState(null)
+
+  // Handle QuickAction routing state
+  useEffect(() => {
+    if (location.state?.preselectTo) {
+      setRouteTo(location.state.preselectTo)
+      if (location.state.highlightDest) {
+        setSelectedArea('east') // example block for Seat 42B
+      }
+      // Scroll to route finder on mobile if pre-selected
+      setTimeout(() => {
+        document.getElementById('route-finder-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+    
+    if (location.state?.filterCategory === 'facilities') {
+      setFacilityFilter(true)
+    }
+  }, [location.state])
 
   // When a quick-nav card is clicked, pre-fill the Route Finder's "To" field
   const handleQuickNav = (item) => {
     setRouteTo(item.to)
     setSelectedArea(item.id)
+    setFacilityFilter(false) // clear filter on new selection
+    setActiveRoute(null) // clear old route visual
     // Smooth-scroll to the route finder on mobile
     document.getElementById('route-finder-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -38,6 +62,11 @@ export default function NavigationPage() {
   // When a map area marker is clicked, select it
   const handleMapSelect = (area) => {
     setSelectedArea((prev) => (prev === area.id ? null : area.id))
+  }
+
+  // When a route is calculated in RouteFinder
+  const handleRouteCalculated = (routeData) => {
+    setActiveRoute(routeData ? routeData.path : null)
   }
 
   return (
@@ -86,7 +115,9 @@ export default function NavigationPage() {
             <StadiumMap
               selectedId={selectedArea}
               wheelchairMode={wheelchairMode}
+              facilityFilter={facilityFilter}
               onSelect={handleMapSelect}
+              routePath={activeRoute}
             />
 
             {/* Crowd indicators below map */}
@@ -98,6 +129,7 @@ export default function NavigationPage() {
             <RouteFinder
               wheelchairMode={wheelchairMode}
               preselectedTo={routeTo}
+              onRouteCalculated={handleRouteCalculated}
               key={routeTo} /* remount when quick-nav pre-fills */
             />
           </div>

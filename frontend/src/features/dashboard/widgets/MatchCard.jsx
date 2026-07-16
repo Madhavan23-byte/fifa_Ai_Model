@@ -1,5 +1,5 @@
 import { Clock, MapPin, Users, Trophy } from 'lucide-react'
-import { LIVE_MATCH } from '@/utils/dashboardData'
+import { useMatch } from '@/store/MatchContext'
 import { cn } from '@/utils/cn'
 
 const EVENT_ICON = { goal: '⚽', yellow: '🟨', red: '🟥', sub: '🔄' }
@@ -43,7 +43,8 @@ function AttendanceBar({ current, capacity }) {
  * attendance progress and last 3 match events.
  */
 export function MatchCard() {
-  const { homeTeam, awayTeam, status, minute, venue, date, group, attendance, events } = LIVE_MATCH
+  const match = useMatch()
+  const { homeTeam, awayTeam, status, minute, venue, date, group, attendance, events } = match
 
   return (
     <div className="glass rounded-2xl overflow-hidden h-full" role="region" aria-label="Live match information">
@@ -79,9 +80,9 @@ export function MatchCard() {
 
           <div className="flex flex-col items-center gap-1 px-4">
             <div className="text-3xl font-black text-white tracking-widest">
-              {homeTeam.score}
+              {match.score.home}
               <span className="text-white/20 mx-1.5">–</span>
-              {awayTeam.score}
+              {match.score.away}
             </div>
           </div>
 

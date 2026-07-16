@@ -33,10 +33,19 @@ export function EmergencyContacts() {
           const Icon = ICON_MAP[contact.icon]
           const isActive = contact.status === 'active'
 
+          const handleCallClick = (e) => {
+            const isDesktop = window.matchMedia('(pointer: fine)').matches;
+            if (isDesktop) {
+              e.preventDefault();
+              alert(`Calling ${contact.label} at ${contact.number}... \n\n(Simulated call on desktop. On a mobile device, this would open your dialer.)`);
+            }
+          }
+
           return (
             <li key={contact.id}>
               <a
                 href={`tel:${contact.number}`}
+                onClick={handleCallClick}
                 className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition-colors group"
                 aria-label={`Call ${contact.label}: ${contact.number}`}
               >

@@ -1,4 +1,5 @@
 import { Cpu, Shield, MapPin, Radio, MessageCircle, Compass } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/AuthContext'
 import { QUICK_ACTIONS } from '@/utils/dashboardData'
 import { cn } from '@/utils/cn'
@@ -37,7 +38,41 @@ const COLOR_MAP = {
  */
 export function QuickActions() {
   const { role } = useAuth()
+  const navigate = useNavigate()
   const actions  = QUICK_ACTIONS[role] ?? QUICK_ACTIONS.organizer
+
+  const handleActionClick = (actionId) => {
+    switch (actionId) {
+      case 'seat':
+        navigate('/navigation', { state: { preselectTo: 'Seat 42B, Block 112', highlightDest: true } })
+        break
+      case 'assist':
+        navigate('/assistant', { state: { autoFocus: true } })
+        break
+      case 'facilities':
+        navigate('/navigation', { state: { filterCategory: 'facilities' } })
+        break
+      case 'emergency':
+        navigate('/emergency')
+        break
+      case 'copilot':
+        navigate('/copilot', { state: { autoFocus: true } })
+        break
+      case 'navigation':
+      case 'zone':
+        navigate('/navigation')
+        break
+      case 'report':
+      case 'broadcast':
+        navigate('/dashboard')
+        break
+      case 'brief':
+        navigate('/assistant', { state: { prefill: 'Show me my volunteer briefing for today.' } })
+        break
+      default:
+        break
+    }
+  }
 
   return (
     <div className="glass rounded-2xl h-full" role="region" aria-label="Quick actions">
@@ -58,6 +93,7 @@ export function QuickActions() {
               <button
                 key={action.id}
                 type="button"
+                onClick={() => handleActionClick(action.id)}
                 className={cn(
                   'flex flex-col items-start gap-3 p-4 rounded-2xl border',
                   'transition-all duration-200 active:scale-[0.97] text-left group',

@@ -80,9 +80,23 @@ function AreaMarker({ area, isSelected, isAccessible, onClick }) {
  *
  * @param {string}   selectedId    - Currently selected area id
  * @param {boolean}  wheelchairMode - Only show accessible areas/routes
+ * @param {boolean}  facilityFilter - Only show facility areas (food, restroom, medical, parking)
  * @param {Function} onSelect      - Callback with selected area object
  */
-export function StadiumMap({ selectedId, wheelchairMode, onSelect }) {
+export function StadiumMap({ selectedId, wheelchairMode, facilityFilter, onSelect, routePath }) {
+  
+  const facilityTypes = ['food', 'restroom', 'medical', 'parking']
+  
+  const visibleAreas = STADIUM_AREAS.filter(area => {
+    if (facilityFilter && !facilityTypes.includes(area.type)) {
+      return false
+    }
+    return true
+  })
+
+  // Ensure selectedId aligns with destination if routePath is active
+  const targetId = routePath && routePath.length > 0 ? routePath[routePath.length - 1].id : selectedId
+
   return (
     <div className="relative w-full" style={{ paddingBottom: '75%' }}>
       {/* Background panel */}
@@ -124,14 +138,42 @@ export function StadiumMap({ selectedId, wheelchairMode, onSelect }) {
               {dir}
             </text>
           ))}
+          
+          {/* Active Route Path */}
+          {routePath && routePath.length >= 2 && (
+            <>
+              {/* Shadow line for glow */}
+              <polyline
+                points={routePath.map(p => `${(p.x / 100) * 400},${(p.y / 100) * 300}`).join(' ')}
+                fill="none"
+                stroke={routePath[routePath.length - 1].crowd === 'critical' ? 'rgba(239,68,68,0.2)' : 'rgba(0,210,255,0.2)'}
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="animate-pulse"
+              />
+              {/* Core line */}
+              <polyline
+                points={routePath.map(p => `${(p.x / 100) * 400},${(p.y / 100) * 300}`).join(' ')}
+                fill="none"
+                stroke={routePath[routePath.length - 1].crowd === 'critical' ? 'rgba(239,68,68,0.8)' : 'rgba(0,210,255,0.8)'}
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray="8 6"
+                className="animate-dash"
+                style={{ animation: 'dash 15s linear infinite' }}
+              />
+            </>
+          )}
         </svg>
 
         {/* Area markers — absolutely positioned over the SVG */}
-        {STADIUM_AREAS.map((area) => (
+        {visibleAreas.map((area) => (
           <AreaMarker
             key={area.id}
             area={area}
-            isSelected={area.id === selectedId}
+            isSelected={area.id === targetId}
             isAccessible={wheelchairMode}
             onClick={onSelect}
           />
@@ -159,6 +201,13 @@ export function StadiumMap({ selectedId, wheelchairMode, onSelect }) {
           ))}
         </div>
       </div>
+      <style>{`
+        @keyframes dash {
+          to {
+            stroke-dashoffset: -1000;
+          }
+        }
+      `}</style>
     </div>
   )
 }

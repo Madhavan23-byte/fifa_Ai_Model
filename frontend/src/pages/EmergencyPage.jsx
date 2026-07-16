@@ -98,17 +98,64 @@ function AIEmergencyGuidancePanel({ role }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleAsk = async () => {
-    if (!query.trim()) return
+  const handleAsk = async (retryQuery = null) => {
+    const q = retryQuery || query;
+    if (!q.trim()) return;
+    
     setLoading(true)
     setError(null)
     setAiData(null)
     
     try {
-      const response = await sendAIQuery({ role, query })
+      // Create a timeout promise to fail fast if backend is slow/offline
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout. Switch to offline emergency instructions.')), 8000)
+      );
+
+      // Race the actual fetch against the timeout
+      const response = await Promise.race([
+        sendAIQuery({ role, query: q }),
+        timeoutPromise
+      ]);
+
       setAiData(response)
     } catch (err) {
-      setError(err.message)
+      console.warn('AI Guidance Error:', err.message);
+      
+      // Generate immediate offline fallback instructions based on keywords
+      const lowerQ = q.toLowerCase();
+      let fallbackData = {
+        summary: "Offline Fallback Enabled",
+        recommendation: "Move to a safe, visible location and contact stadium staff immediately.",
+        priority: "High",
+        confidence: 100,
+        actions: [
+          "Locate the nearest volunteer in a yellow vest.",
+          "If immediate danger, call 911."
+        ]
+      };
+      
+      if (lowerQ.includes('heart') || lowerQ.includes('medical') || lowerQ.includes('breath')) {
+        fallbackData.recommendation = "Possible medical emergency. Send someone to find an AED/Medic immediately.";
+        fallbackData.actions = [
+          "Check breathing and pulse.",
+          "If unresponsive, begin CPR immediately.",
+          "Send a bystander to grab the nearest AED (Automated External Defibrillator).",
+          "Call Medical at 555-0103."
+        ];
+        fallbackData.priority = "Critical";
+      } else if (lowerQ.includes('fire') || lowerQ.includes('smoke')) {
+        fallbackData.recommendation = "Possible fire hazard. Evacuate the immediate area.";
+        fallbackData.actions = [
+          "Do not use elevators.",
+          "Follow illuminated exit signs to the nearest stairwell.",
+          "Stay low to the ground if there is smoke.",
+          "Call Security at 555-0102."
+        ];
+        fallbackData.priority = "Critical";
+      }
+
+      setError({ message: err.message || "Failed to connect to AI Guidance.", fallback: fallbackData });
     } finally {
       setLoading(false)
     }
@@ -131,7 +178,7 @@ function AIEmergencyGuidancePanel({ role }) {
           className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-stadium-500/50 transition-colors"
         />
         <button 
-          onClick={handleAsk}
+          onClick={() => handleAsk()}
           disabled={loading || !query.trim()}
           className="flex-shrink-0 bg-stadium-500 text-black px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-stadium-400 disabled:opacity-50 transition-colors"
         >
@@ -140,15 +187,47 @@ function AIEmergencyGuidancePanel({ role }) {
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/[0.02] mt-2">
-          <p className="text-red-400 text-xs font-semibold flex items-center gap-1">
-            <span aria-hidden="true">⚠️</span> AI Guidance Unavailable
-          </p>
-          <p className="text-white/60 text-[11px] mt-1">{error}</p>
+        <div className="animate-fade-up">
+          <div className="p-3 rounded-xl border border-red-500/20 bg-red-500/[0.02] mt-2 mb-3 flex items-center justify-between">
+            <div>
+              <p className="text-red-400 text-xs font-semibold flex items-center gap-1">
+                <span aria-hidden="true">⚠️</span> AI Guidance Unavailable
+              </p>
+              <p className="text-white/60 text-[11px] mt-1">{error.message}</p>
+            </div>
+            <button 
+              onClick={() => handleAsk(query)}
+              className="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-1.5 rounded-lg font-semibold transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+          
+          {/* Render Offline Fallback Data */}
+          {error.fallback && (
+             <div className="space-y-3 text-sm text-white/80 mt-4 pt-4 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                 <Shield className="w-4 h-4" />
+                 <span className="text-[11px] font-bold uppercase tracking-widest">Offline Emergency Instructions</span>
+              </div>
+              <div><strong className="text-white">Recommendation:</strong> <span className="text-white/70">{error.fallback.recommendation}</span></div>
+              
+              {error.fallback.actions && error.fallback.actions.length > 0 && (
+                <div>
+                  <strong className="text-white">Actions:</strong>
+                  <ul className="list-disc pl-5 mt-1 space-y-1 text-white/70 text-xs font-bold text-red-300">
+                    {error.fallback.actions.map((action, i) => (
+                      <li key={i}>{action}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {aiData && (
+      {aiData && !error && (
         <div className="space-y-3 text-sm text-white/80 animate-fade-up mt-4 pt-4 border-t border-white/[0.06]">
           <div><strong className="text-white">Summary:</strong> <span className="text-white/70">{aiData.summary}</span></div>
           <div><strong className="text-white">Recommendation:</strong> <span className="text-white/70">{aiData.recommendation}</span></div>

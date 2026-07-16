@@ -28,10 +28,25 @@ export const STADIUM_AREAS = [
   { id: 'park',   type: 'parking',  label: 'Parking Area',  crowd: 'medium', x: 85,  y: 20,  accessible: true  },
   { id: 'exit-1', type: 'exit',     label: 'Emergency Exit A', crowd: 'low', x: 20,  y: 90,  accessible: true  },
   { id: 'exit-2', type: 'exit',     label: 'Emergency Exit B', crowd: 'low', x: 80,  y: 90,  accessible: true  },
+  
+  // Extra required nodes
+  { id: 'info',   type: 'info',     label: 'Information Desk', crowd: 'low', x: 50,  y: 95,  accessible: true  },
+  { id: 'vol',    type: 'volunteer',label: 'Volunteer Kiosk',  crowd: 'low', x: 50,  y: 5,   accessible: true  },
 ]
 
 // ─── Location options (for route finder dropdowns) ───────────────────────────
 export const LOCATIONS = [
+  // Special dynamic "Nearest" options
+  { id: 'nearest-gate',      label: 'Nearest Gate',           icon: '🚪' },
+  { id: 'nearest-exit',      label: 'Nearest Exit',           icon: '🚨' },
+  { id: 'nearest-food',      label: 'Nearest Food Court',     icon: '🍔' },
+  { id: 'nearest-restroom',  label: 'Nearest Restroom',       icon: '🚻' },
+  { id: 'nearest-medical',   label: 'Nearest Medical Center', icon: '🏥' },
+  { id: 'nearest-parking',   label: 'Nearest Parking',        icon: '🅿️' },
+  { id: 'nearest-volunteer', label: 'Nearest Volunteer',      icon: '🙋' },
+  { id: 'nearest-info',      label: 'Nearest Information',    icon: 'ℹ️' },
+
+  // Specific locations
   { id: 'main-entrance', label: 'Main Entrance', icon: '🏟️' },
   { id: 'my-seat',       label: 'My Seat — Section 104, Row G', icon: '💺' },
   { id: 'gate-a',        label: 'Gate A',        icon: '🚪' },
@@ -46,6 +61,8 @@ export const LOCATIONS = [
   { id: 'park',          label: 'Parking Area',   icon: '🅿️' },
   { id: 'exit-1',        label: 'Emergency Exit A', icon: '🚨' },
   { id: 'exit-2',        label: 'Emergency Exit B', icon: '🚨' },
+  { id: 'info',          label: 'Information Desk', icon: 'ℹ️' },
+  { id: 'vol',           label: 'Volunteer Kiosk',  icon: '🙋' },
 ]
 
 // ─── Route data (from → to → route info) ─────────────────────────────────────
@@ -216,4 +233,6 @@ export const AREA_TYPE_CONFIG = {
   medical:  { emoji: '🏥', bg: 'bg-red-500/20',      border: 'border-red-500/40',      text: 'text-red-300'      },
   parking:  { emoji: '🅿️', bg: 'bg-purple-500/20',   border: 'border-purple-500/40',   text: 'text-purple-300'   },
   exit:     { emoji: '🚨', bg: 'bg-red-600/20',      border: 'border-red-600/40',      text: 'text-red-400'      },
+  info:     { emoji: 'ℹ️', bg: 'bg-indigo-500/20',   border: 'border-indigo-500/40',   text: 'text-indigo-300'   },
+  volunteer:{ emoji: '🙋', bg: 'bg-green-500/20',    border: 'border-green-500/40',    text: 'text-green-300'    },
 }

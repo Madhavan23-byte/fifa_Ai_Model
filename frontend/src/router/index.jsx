@@ -6,6 +6,7 @@ import AIAssistantPage       from '@/pages/AIAssistantPage'
 import OperationsCopilotPage from '@/pages/OperationsCopilotPage'
 import NavigationPage        from '@/pages/NavigationPage'
 import EmergencyPage         from '@/pages/EmergencyPage'
+import MatchInfoPage         from '@/pages/MatchInfoPage'
 import NotFoundPage          from '@/pages/NotFoundPage'
 
 const router = createHashRouter([
@@ -36,6 +37,10 @@ const router = createHashRouter([
   {
     path: '/emergency',
     element: <EmergencyPage />,
+  },
+  {
+    path: '/match-info',
+    element: <MatchInfoPage />,
   },
   {
     path: '*',

@@ -1,5 +1,7 @@
 import { useAuth, ROLES } from '@/store/AuthContext'
-import { MatchCard }      from './widgets/MatchCard'
+import { MatchCard }         from './widgets/MatchCard'
+import { MatchStatsCard }    from './widgets/MatchStatsCard'
+import { MatchTimelineCard } from './widgets/MatchTimelineCard'
 import { CrowdStatus }    from './widgets/CrowdStatus'
 import { GateStatus }     from './widgets/GateStatus'
 import { ParkingStatus }  from './widgets/ParkingStatus'
@@ -37,8 +39,8 @@ const FanDashboard = () => (
   <Grid>
     <Wide><MatchCard /></Wide>
     <WeatherCard />
-    <ParkingStatus />
-    <Wide><QuickActions /></Wide>
+    <MatchStatsCard />
+    <Wide><MatchTimelineCard /></Wide>
   </Grid>
 )
 

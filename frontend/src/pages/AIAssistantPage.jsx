@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { Send, Cpu } from 'lucide-react'
 import { ChatBubble, TypingIndicator, SuggestedPrompts } from '@/components/ai'
 import { FAN_SUGGESTED_PROMPTS } from '@/utils/aiDemoData'
@@ -9,23 +9,66 @@ import { sendCopilotMessage as sendAIQuery } from '@/services/copilotService'
 
 export default function AIAssistantPage() {
   const { role } = useAuth()
+  const location = useLocation()
   if (!role) return <Navigate to="/role-select" replace />
 
-  const [messages, setMessages] = useState([])
+  // Load from sessionStorage
+  const [messages, setMessages] = useState(() => {
+    const saved = sessionStorage.getItem('fan_ai_history')
+    return saved ? JSON.parse(saved) : []
+  })
+  
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [showSuggestions, setShowSuggestions] = useState(true)
+  const [showSuggestions, setShowSuggestions] = useState(messages.length === 0)
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+
+  // Save to sessionStorage whenever messages change
+  useEffect(() => {
+    sessionStorage.setItem('fan_ai_history', JSON.stringify(messages))
+    setShowSuggestions(messages.length === 0)
+  }, [messages])
+
+  // Handle autoFocus and prefill from location state
+  useEffect(() => {
+    if (location.state?.autoFocus) {
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+    if (location.state?.prefill && messages.length === 0) {
+      handleSend(location.state.prefill)
+      // clear state so it doesn't refire on reload
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   // Scroll to bottom when messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
+  const generateOfflineGuidance = (query) => {
+    const q = query.toLowerCase()
+    if (q.includes('food') || q.includes('eat')) {
+      return `### Offline Guidance\nFood courts are located on all levels. The closest is usually straight ahead from your gate.`
+    }
+    if (q.includes('emergency') || q.includes('help') || q.includes('medical')) {
+      return `### 🚨 Emergency Help\nIf you require immediate medical assistance, dial **+1 (555) 071-3900** or find the nearest staff member in a yellow jacket.`
+    }
+    if (q.includes('seat') || q.includes('find')) {
+      return `### Offline Guidance\nPlease check the physical signs above the concourse for section numbers, or use the Stadium Navigation map in the dashboard.`
+    }
+    return `### Offline Guidance\nPlease try checking the main dashboard for live match info, or look for the nearest Information Desk.`
+  }
+
   const handleSend = async (text) => {
     if (!text.trim()) return
 
-    // Add user message
+    // Remove any previous error messages before sending new one
+    setMessages(prev => prev.filter(m => !m.isError))
+
     const userMsg = {
       id: Date.now().toString(),
       role: 'user',
@@ -39,20 +82,34 @@ export default function AIAssistantPage() {
     setIsTyping(true)
 
     try {
+      // Build conversation history (last 4 messages for context + system prompt)
+      // We don't change the backend schema, we just bundle it in the query
+      const currentHistory = messages.slice(-4)
+      let contextQuery = ''
+      if (currentHistory.length > 0) {
+        contextQuery += `[Previous Context]\n`
+        currentHistory.forEach(m => {
+          if (!m.isError) {
+            contextQuery += `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}\n`
+          }
+        })
+        contextQuery += `[/Previous Context]\n\n`
+      }
+      contextQuery += `[Instruction: You MUST reply in the exact language the user used. Be concise.]\n\n`
+      contextQuery += `User Query: ${text}`
+
       // Real Gemini API call via FastAPI backend
-      const data = await sendAIQuery({ role: 'fan', query: text })
+      const data = await sendAIQuery({ role: 'fan', query: contextQuery })
 
       let actionsText = '';
       if (data.actions && data.actions.length > 0) {
-        actionsText = `### Actions\n` + data.actions.map(a => `- ${a}`).join('\n');
+        actionsText = `### Suggested Actions\n` + data.actions.map(a => `- ${a}`).join('\n');
       }
 
       const contentParts = [
         `### Summary\n${data.summary}`,
         `### Recommendation\n${data.recommendation}`,
         actionsText,
-        `- **Priority:** ${data.priority}`,
-        `- **Confidence:** ${data.confidence}%`,
       ];
       if (data.notes) {
         contentParts.push(`- **Notes:** ${data.notes}`);
@@ -68,17 +125,24 @@ export default function AIAssistantPage() {
       }
       setMessages(prev => [...prev, aiMsg])
     } catch (err) {
-      setInputValue(text)
+      // Offline / Network Error Handling
+      const offlineGuidance = generateOfflineGuidance(text)
       const errMsg = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `⚠️ **Unable to reach the AI backend.**\n\n${err.message}\n\nYour message was kept in the input box. Please verify your connection and click Send to retry.`,
+        isError: true,
+        failedQuery: text,
+        content: `⚠️ **AI temporarily unavailable.**\n\n${offlineGuidance}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages(prev => [...prev, errMsg])
     } finally {
       setIsTyping(false)
     }
+  }
+
+  const handleRetry = (failedQuery) => {
+    handleSend(failedQuery)
   }
 
   const handleKeyDown = (e) => {
@@ -132,7 +196,11 @@ export default function AIAssistantPage() {
 
             {/* Conversation */}
             {messages.map((msg) => (
-              <ChatBubble key={msg.id} {...msg} />
+              <ChatBubble 
+                key={msg.id} 
+                {...msg} 
+                onRetry={msg.isError ? () => handleRetry(msg.failedQuery) : null}
+              />
             ))}
 
             {isTyping && <TypingIndicator />}
@@ -144,6 +212,7 @@ export default function AIAssistantPage() {
           <div className="p-4 sm:p-6 bg-gradient-to-t from-[#060c1a] to-transparent border-t border-white/[0.04]">
             <div className="relative flex items-end gap-2 max-w-3xl mx-auto">
               <textarea
+                ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}

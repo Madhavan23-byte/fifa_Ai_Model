@@ -1,10 +1,13 @@
 import { AppRouter }   from '@/router'
 import { AuthProvider } from '@/store/AuthContext'
+import { MatchProvider } from '@/store/MatchContext'
 
 function App() {
   return (
     <AuthProvider>
-      <AppRouter />
+      <MatchProvider>
+        <AppRouter />
+      </MatchProvider>
     </AuthProvider>
   )
 }

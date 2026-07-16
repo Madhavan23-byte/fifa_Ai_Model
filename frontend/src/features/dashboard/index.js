@@ -1,6 +1,8 @@
 export { CommandCenterDashboard } from './CommandCenterDashboard'
 // Widget exports — available for future standalone use
-export { MatchCard }      from './widgets/MatchCard'
+export { MatchCard }         from './widgets/MatchCard'
+export { MatchStatsCard }    from './widgets/MatchStatsCard'
+export { MatchTimelineCard } from './widgets/MatchTimelineCard'
 export { CrowdStatus }    from './widgets/CrowdStatus'
 export { GateStatus }     from './widgets/GateStatus'
 export { ParkingStatus }  from './widgets/ParkingStatus'

@@ -1,7 +1,7 @@
 import { Clock, MapPin, CloudSun, Radio } from 'lucide-react'
 import { Badge } from '@/components/common'
 import { SectionTitle, PageContainer } from '@/components/ui'
-import { DEMO_MATCH } from '@/utils/constants'
+import { useMatch } from '@/store/MatchContext'
 import { cn } from '@/utils/cn'
 
 // ─── Gate status row ──────────────────────────────────────────────────────────
@@ -95,7 +95,8 @@ function CapacityBar({ occupied, total }) {
  * gate status, parking, weather, and stadium capacity.
  */
 export function MatchPreviewSection() {
-  const { homeTeam, awayTeam, kickoff, venue, date, gates, parking, weather, capacity } = DEMO_MATCH
+  const match = useMatch()
+  const { homeTeam, awayTeam, kickoff, venue, date, gates, parking, weather, capacity } = match
 
   return (
     <section

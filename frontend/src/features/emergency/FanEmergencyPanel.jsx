@@ -52,22 +52,136 @@ function ActionButton({ action, onClick }) {
   )
 }
 
+function IncidentReportingModal({ isOpen, onClose }) {
+  const [type, setType] = useState('medical')
+  const [location, setLocation] = useState('')
+  const [desc, setDesc] = useState('')
+  const [status, setStatus] = useState('idle') // idle, submitting, success, offline_success
+  
+  // Close on Escape
+  import { useEffect, useRef } from 'react'
+  useEffect(() => {
+    if (!isOpen) return
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [isOpen, onClose])
+
+  if (!isOpen) return null
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('submitting')
+    
+    const payload = {
+      id: Date.now().toString(),
+      type,
+      location,
+      desc,
+      timestamp: new Date().toISOString()
+    };
+    
+    try {
+      // Simulate backend call
+      const res = await fetch('/api/v1/incidents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!res.ok) throw new Error('Backend failed');
+      setStatus('success');
+    } catch (err) {
+      // Gracefully fallback to localStorage if backend is unavailable
+      const existing = JSON.parse(localStorage.getItem('stadium_offline_incidents') || '[]');
+      existing.push(payload);
+      localStorage.setItem('stadium_offline_incidents', JSON.stringify(existing));
+      setStatus('offline_success');
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="report-modal-title" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="glass-strong rounded-2xl w-full max-w-sm shadow-2xl border ring-1 ring-white/10 animate-fade-up">
+        <div className="flex items-center justify-between p-5 border-b border-white/[0.07]">
+          <h2 id="report-modal-title" className="text-white font-bold text-base flex items-center gap-2">
+             <AlertTriangle className="w-4 h-4 text-orange-400" />
+             Report an Incident
+          </h2>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg glass flex items-center justify-center text-white/40 hover:text-white transition-colors" aria-label="Close modal">
+             <span aria-hidden="true">×</span>
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {status === 'success' || status === 'offline_success' ? (
+            <div className="text-center py-4 space-y-3">
+              <div className="w-12 h-12 rounded-full bg-stadium-500/20 border border-stadium-500/40 text-stadium-400 flex items-center justify-center mx-auto mb-2">
+                <span aria-hidden="true" className="text-xl">✓</span>
+              </div>
+              <h3 className="text-white font-bold">Report Submitted</h3>
+              {status === 'offline_success' ? (
+                <p className="text-white/60 text-xs">Saved locally due to poor connection. We will sync it shortly.</p>
+              ) : (
+                <p className="text-white/60 text-xs">Security has been notified.</p>
+              )}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Incident Type</label>
+                <select value={type} onChange={e => setType(e.target.value)} className="w-full appearance-none glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-[#060c1a]">
+                   <option value="medical">Medical Emergency</option>
+                   <option value="security">Security Issue / Disturbance</option>
+                   <option value="maintenance">Maintenance / Spill</option>
+                   <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Location</label>
+                <input required type="text" placeholder="e.g. Section 120, Row G" value={location} onChange={e => setLocation(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02]" />
+              </div>
+
+              <div>
+                <label className="text-white/50 text-[10px] uppercase font-bold tracking-widest block mb-1.5">Description</label>
+                <textarea required rows={3} placeholder="Briefly describe what happened..." value={desc} onChange={e => setDesc(e.target.value)} className="w-full glass rounded-xl px-4 py-3 text-white text-sm border border-white/[0.1] focus:outline-none focus:border-stadium-500/50 bg-white/[0.02] resize-none" />
+              </div>
+              
+              <button disabled={status === 'submitting' || !location || !desc} type="submit" className="w-full bg-stadium-500 text-black font-bold text-sm py-3 rounded-xl hover:bg-stadium-400 disabled:opacity-50 transition-colors">
+                 {status === 'submitting' ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /**
  * Fan emergency panel — 2x3 grid of large accessible action buttons.
  * Opens a confirmation modal on click.
  */
 export function FanEmergencyPanel() {
   const [activeAction, setActiveAction] = useState(null)
+  const [reportingOpen, setReportingOpen] = useState(false)
 
   return (
     <>
       <div className="space-y-4">
         {/* Alert banner */}
-        <div className="glass rounded-xl px-4 py-3 border border-red-500/25 bg-red-500/[0.06] flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" aria-hidden="true" />
-          <p className="text-red-300 text-xs font-medium">
-            In a life-threatening emergency, always call <strong>911</strong> immediately.
-          </p>
+        <div className="glass rounded-xl px-4 py-3 border border-red-500/25 bg-red-500/[0.06] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" aria-hidden="true" />
+            <p className="text-red-300 text-xs font-medium">
+              In a life-threatening emergency, always call <strong>911</strong> immediately.
+            </p>
+          </div>
+          
+          <button onClick={() => setReportingOpen(true)} className="flex-shrink-0 text-[10px] bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 px-3 py-1.5 rounded-lg font-bold uppercase tracking-widest transition-colors">
+            Report Incident
+          </button>
         </div>
 
         {/* Action grid */}
@@ -89,6 +203,12 @@ export function FanEmergencyPanel() {
         isOpen={!!activeAction}
         onClose={() => setActiveAction(null)}
         action={activeAction}
+      />
+      
+      {/* Incident Reporting Modal */}
+      <IncidentReportingModal 
+        isOpen={reportingOpen} 
+        onClose={() => setReportingOpen(false)} 
       />
     </>
   )
